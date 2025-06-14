@@ -9,6 +9,17 @@ if "%ROOT%"=="" (
     exit /b 1
 )
 
+:: Ask user for base package name
+set /p PACKAGE=Enter the base package name (e.g., com.garbuz): 
+
+if "%PACKAGE%"=="" (
+    echo No package name entered. Exiting.
+    exit /b 1
+)
+
+:: Replace '.' with '\' to convert package name to directory path
+set "PACKAGE_DIR=%PACKAGE:.=\%"
+
 :: Determine module names based on -root suffix
 set CORE=%ROOT%
 set WEB=%ROOT%
@@ -27,21 +38,22 @@ if /i "%LAST5%"=="-root" (
 echo Creating project folders for root project: %ROOT%
 echo Core module: %CORE%
 echo Web module: %WEB%
+echo Base package: %PACKAGE%
 
 :: Create root folder and dev-ops config
 mkdir "%ROOT%"
 mkdir "%ROOT%\dev-ops\maven\site-config"
 
-:: Create core module folder structure
-mkdir "%ROOT%\%CORE%\src\main\java"
+:: Create core module structure
+mkdir "%ROOT%\%CORE%\src\main\java\%PACKAGE_DIR%\core"
 mkdir "%ROOT%\%CORE%\src\main\resources"
-mkdir "%ROOT%\%CORE%\src\test\java"
+mkdir "%ROOT%\%CORE%\src\test\java\%PACKAGE_DIR%\core"
 mkdir "%ROOT%\%CORE%\src\test\resources"
 
-:: Create web module folder structure including webapp
-mkdir "%ROOT%\%WEB%\src\main\java"
+:: Create web module structure
+mkdir "%ROOT%\%WEB%\src\main\java\%PACKAGE_DIR%\web"
 mkdir "%ROOT%\%WEB%\src\main\resources"
-mkdir "%ROOT%\%WEB%\src\test\java"
+mkdir "%ROOT%\%WEB%\src\test\java\%PACKAGE_DIR%\web"
 mkdir "%ROOT%\%WEB%\src\test\resources"
 mkdir "%ROOT%\%WEB%\src\main\webapp\WEB-INF\lib"
 mkdir "%ROOT%\%WEB%\src\main\webapp\WEB-INF\classes"
