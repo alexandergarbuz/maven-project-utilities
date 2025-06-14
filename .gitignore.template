@@ -1,0 +1,83 @@
+# =======================================
+# Help files
+# =======================================
+HELP.md
+
+# =======================================
+# Maven build output
+# =======================================
+target/
+**/target/
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+# Maven wrapper
+!.mvn/wrapper/maven-wrapper.jar
+
+# =======================================
+# Compiled Java class files
+# =======================================
+*.class
+**/*.class
+
+# =======================================
+# Backup files
+# =======================================
+*.bak
+
+# =======================================
+# Eclipse / STS / MyEclipse
+# =======================================
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings/
+.springBeans
+.sts4-cache
+**/.classpath
+**/.project
+**/.settings/
+
+# =======================================
+# IntelliJ IDEA
+# =======================================
+.idea/
+**/.idea/
+*.iml
+*.iws
+*.ipr
+.idea/**/workspace.xml
+.idea/**/tasks.xml
+.idea/**/usage.statistics.xml
+.idea/**/shelf/
+
+# =======================================
+# NetBeans
+# =======================================
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+build/
+**/build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+# =======================================
+# Visual Studio Code
+# =======================================
+.vscode/
+
+# =======================================
+# Terraform
+# =======================================
+.terraform/
+
+# =======================================
+# Environment files
+# =======================================
+.env
+**/.env
+.env.*
