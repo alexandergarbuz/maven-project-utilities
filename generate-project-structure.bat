@@ -17,50 +17,77 @@ if "%PACKAGE%"=="" (
     exit /b 1
 )
 
-:: Replace '.' with '\' to convert package name to directory path
+:: Convert package name to folder path (com.garbuz -> com\garbuz)
 set "PACKAGE_DIR=%PACKAGE:.=\%"
 
-:: Determine module names based on -root suffix
-set CORE=%ROOT%
-set WEB=%ROOT%
-
-:: Get last 5 characters to see if it ends with -root
+:: Derive base name and module names
+set "BASE_NAME=%ROOT%"
 set LAST5=%ROOT:~-5%
 if /i "%LAST5%"=="-root" (
     set "BASE_NAME=%ROOT:~0,-5%"
-    set "CORE=%BASE_NAME%-core"
-    set "WEB=%BASE_NAME%-web"
-) else (
-    set "CORE=%ROOT%-core"
-    set "WEB=%ROOT%-web"
 )
 
-echo Creating project folders for root project: %ROOT%
-echo Core module: %CORE%
-echo Web module: %WEB%
-echo Base package: %PACKAGE%
+set "CORE=%BASE_NAME%-core"
+set "WEB=%BASE_NAME%-web"
+set "SERVICES=%BASE_NAME%-services"
 
-:: Create root folder and dev-ops config
+echo Creating project folders:
+echo ROOT:     %ROOT%
+echo CORE:     %CORE%
+echo WEB:      %WEB%
+echo SERVICES: %SERVICES%
+echo BASE PKG: %PACKAGE%
+
+:: Create root and dev-ops folder
 mkdir "%ROOT%"
 mkdir "%ROOT%\dev-ops\maven\site-config"
 
-:: Create core module structure
-mkdir "%ROOT%\%CORE%\src\main\java\%PACKAGE_DIR%\core"
-mkdir "%ROOT%\%CORE%\src\main\resources"
-mkdir "%ROOT%\%CORE%\src\test\java\%PACKAGE_DIR%\core"
-mkdir "%ROOT%\%CORE%\src\test\resources"
+:: .gitignore in root
+(
+    echo /target/
+    echo /.idea/
+    echo /.classpath
+    echo /.project
+    echo /.settings/
+    echo *.log
+    echo *.iml
+    echo *.tmp
+) > "%ROOT%\.gitignore"
 
-:: Create web module structure
-mkdir "%ROOT%\%WEB%\src\main\java\%PACKAGE_DIR%\web"
-mkdir "%ROOT%\%WEB%\src\main\resources"
-mkdir "%ROOT%\%WEB%\src\test\java\%PACKAGE_DIR%\web"
-mkdir "%ROOT%\%WEB%\src\test\resources"
-mkdir "%ROOT%\%WEB%\src\main\webapp\WEB-INF\lib"
-mkdir "%ROOT%\%WEB%\src\main\webapp\WEB-INF\classes"
+:: Helper function for resource props and readme
+call :create_resources "%ROOT%" "%CORE%" "%PACKAGE_DIR%\core"
+call :create_resources "%ROOT%" "%WEB%" "%PACKAGE_DIR%\web"
+call :create_resources "%ROOT%" "%SERVICES%" "%PACKAGE_DIR%\services"
 
 echo.
 echo Folder structure created successfully:
 tree "%ROOT%"
 
 pause
+exit /b
+
+:: ---------------------
+:create_resources
+:: %1 = root
+:: %2 = module name
+:: %3 = full subpackage dir (com\garbuz\xyz)
+mkdir "%~1\%~2\src\main\java\%~3"
+mkdir "%~1\%~2\src\main\resources"
+mkdir "%~1\%~2\src\test\java\%~3"
+mkdir "%~1\%~2\src\test\resources"
+mkdir "%~1\%~2\src\main\webapp\WEB-INF\lib"
+mkdir "%~1\%~2\src\main\webapp\WEB-INF\classes"
+
+:: application.properties
+echo # Application config > "%~1\%~2\src\main\resources\application.properties"
+
+:: test-application.properties
+echo # Test config > "%~1\%~2\src\test\resources\test-application.properties"
+
+:: README.md
+(
+    echo # %~2
+    echo This module is part of the %BASE_NAME% application.
+) > "%~1\%~2\README.md"
+
 exit /b
