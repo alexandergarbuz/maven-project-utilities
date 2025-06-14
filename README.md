@@ -1,2 +1,3 @@
-# maven-project-utilities
-Collection of files and utilities for Maven builds
+# Maven Project Utilities
+
+This project contains collection of files and utilities for Maven builds.
