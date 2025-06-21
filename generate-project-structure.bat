@@ -44,11 +44,11 @@ mkdir "%ROOT%\dev-ops\maven\site-config"
 
 :: .gitignore in root
 (
-    echo /target/
-    echo /.idea/
-    echo /.classpath
-    echo /.project
-    echo /.settings/
+    echo target/
+    echo .idea/
+    echo .classpath
+    echo .project
+    echo .settings/
     echo *.log
     echo *.iml
     echo *.tmp
