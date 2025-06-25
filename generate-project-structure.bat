@@ -54,6 +54,13 @@ mkdir "%ROOT%\dev-ops\maven\site-config"
     echo *.tmp
 ) > "%ROOT%\.gitignore"
 
+:: README in root
+(
+    echo #Read Me file
+    echo Read Me information
+    
+) > "%ROOT%\README.md"
+
 :: Create folders and resources for each module
 call :create_resources "%ROOT%" "%CORE%" "%PACKAGE_DIR%\core"
 call :create_resources "%ROOT%" "%WEB%" "%PACKAGE_DIR%\web"
