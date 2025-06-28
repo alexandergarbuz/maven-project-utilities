@@ -122,7 +122,12 @@
             </plugin>
         </plugins>
     </build>
-
+    <distributionManagement>
+        <site>
+            <id>project-site</id>
+            <url>file://${session.executionRootDirectory}/target/site</url>
+        </site>
+    </distributionManagement>
     <reporting>
         <plugins>
             <plugin>
