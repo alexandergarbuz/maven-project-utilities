@@ -68,12 +68,6 @@
         </dependencies>
     </dependencyManagement>
 
-    <modules>
-        <module>multi-module-build-core</module>
-        <module>multi-module-build-web</module>
-        <module>multi-module-build-services</module>
-    </modules>
-
     <build>
         <pluginManagement>
             <plugins>
@@ -194,4 +188,10 @@
             </plugin>
         </plugins>
     </reporting>
+
+    <modules>
+        <module>multi-module-build-core</module>
+        <module>multi-module-build-web</module>
+        <module>multi-module-build-services</module>
+    </modules>
 </project>
