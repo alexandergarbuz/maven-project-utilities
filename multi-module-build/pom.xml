@@ -22,6 +22,7 @@
         <!-- Plugin versions -->
         <maven.compiler.plugin.version>3.11.0</maven.compiler.plugin.version>
         <maven.war.plugin.version>3.4.0</maven.war.plugin.version>
+        <maven.surefire.plugin.version>3.1.2</maven.surefire.plugin.version>
         <jacoco.plugin.version>0.8.10</jacoco.plugin.version>
         <pmd.plugin.version>3.21.0</pmd.plugin.version>
         <checkstyle.plugin.version>3.3.0</checkstyle.plugin.version>
@@ -112,6 +113,11 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-project-info-reports-plugin</artifactId>
                     <version>${maven.project.info.reports.plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>${maven.surefire.plugin.version}</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -224,6 +230,11 @@
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>${maven.surefire.plugin.version}</version>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jxr-plugin</artifactId>
                 <version>${maven.jxr.plugin.version}</version>
                 <reportSets>
@@ -283,6 +294,7 @@
         </plugins>
     </reporting>
     <modules>
+        <module>multi-module-build-bom</module>
         <module>multi-module-build-core</module>
         <module>multi-module-build-web</module>
         <module>multi-module-build-services</module>
