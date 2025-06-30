@@ -8,12 +8,18 @@
     <version>1.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
+    <name>Multi module build example</name>
+    <description>This is a demo project to demonstrate how you can build a multimodule Maven project.</description>
+    <url>http://garbuz.com</url>
+
     <properties>
         <java.version>17</java.version>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.root.dir>${basedir}</project.root.dir>
         
+        <!-- Plugin versions -->
         <maven.compiler.plugin.version>3.11.0</maven.compiler.plugin.version>
         <maven.war.plugin.version>3.4.0</maven.war.plugin.version>
         <jacoco.plugin.version>0.8.10</jacoco.plugin.version>
@@ -21,12 +27,28 @@
         <checkstyle.plugin.version>3.3.0</checkstyle.plugin.version>
         <maven.site.plugin.version>4.0.0-M9</maven.site.plugin.version>
         <maven.project.info.reports.plugin.version>3.4.5</maven.project.info.reports.plugin.version>
+        <maven.jxr.plugin.version>3.3.0</maven.jxr.plugin.version>
 
+        <!-- Plugin configurations -->
+        <checkstyle.config.location>${project.root.dir}/dev-ops/maven/site-config/checkstyle.xml</checkstyle.config.location>
+        <checkstyle.encoding>UTF-8</checkstyle.encoding>
+        <checkstyle.consoleOutput>true</checkstyle.consoleOutput>
+        <checkstyle.failsOnError>false</checkstyle.failsOnError>
+        <checkstyle.failOnViolation>false</checkstyle.failOnViolation>
+        <checkstyle.includeTestSourceDirectory>false</checkstyle.includeTestSourceDirectory>
+
+        <pmd.config.location>${project.root.dir}/dev-ops/maven/site-config/pmd.xml</pmd.config.location>
+        <pmd.target.jdk>${java.version}</pmd.target.jdk>
+        <pmd.fail.on.violation>false</pmd.fail.on.violation>
+        <pmd.print.failing.errors>true</pmd.print.failing.errors>
+
+
+        <!-- Commont libraries -->
         <commons-lang3.version>3.12.0</commons-lang3.version>
         <commons-io.version>2.11.0</commons-io.version>
         <commons-collections4.version>4.4</commons-collections4.version>
         <commons-logging.version>1.2</commons-logging.version>
-        
+        <!-- Other dependencies -->
         <junit.version>4.13.2</junit.version>
         <log4j.version>1.2.17</log4j.version>
         <doxia.version>2.0.0-M10</doxia.version>
@@ -95,20 +117,70 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-pmd-plugin</artifactId>
                     <version>${pmd.plugin.version}</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.jacoco</groupId>
-                    <artifactId>jacoco-maven-plugin</artifactId>
-                    <version>${jacoco.plugin.version}</version>
+                    <configuration>
+                        <rulesets>
+                            <ruleset>${pmd.config.location}</ruleset>
+                        </rulesets>
+                        <targetJdk>${pmd.target.jdk}</targetJdk>
+                        <failOnViolation>${pmd.fail.on.violation}</failOnViolation>
+                        <printFailingErrors>${pmd.print.failing.errors}</printFailingErrors>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>check</goal>
+                            </goals>
+                        </execution>
+                    </executions>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-checkstyle-plugin</artifactId>
                     <version>${checkstyle.plugin.version}</version>
+                    <configuration>
+                        <configLocation>${checkstyle.config.location}</configLocation>
+                        <encoding>${checkstyle.encoding}</encoding>
+                        <consoleOutput>${checkstyle.consoleOutput}</consoleOutput>
+                        <failsOnError>${checkstyle.failsOnError}</failsOnError>
+                        <failOnViolation>${checkstyle.failOnViolation}</failOnViolation>
+                        <includeTestSourceDirectory>${checkstyle.includeTestSourceDirectory}</includeTestSourceDirectory>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>validate</id>
+                            <phase>validate</phase>
+                            <goals>
+                                <goal>check</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-jxr-plugin</artifactId>
+                    <version>${maven.jxr.plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.jacoco</groupId>
+                    <artifactId>jacoco-maven-plugin</artifactId>
+                    <version>${jacoco.plugin.version}</version>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>prepare-agent</goal>
+                            </goals>
+                        </execution>
+                        <execution>
+                            <id>report</id>
+                            <phase>prepare-package</phase>
+                            <goals>
+                                <goal>report</goal>
+                            </goals>
+                        </execution>
+                    </executions>
                 </plugin>
             </plugins>
         </pluginManagement>
-
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -152,11 +224,49 @@
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jxr-plugin</artifactId>
+                <version>${maven.jxr.plugin.version}</version>
+                <reportSets>
+                    <reportSet>
+                        <reports>
+                            <report>jxr</report>
+                            <report>test-jxr</report>
+                        </reports>
+                    </reportSet>
+                </reportSets>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-pmd-plugin</artifactId>
                 <version>${pmd.plugin.version}</version>
                 <configuration>
-                    <targetJdk>${java.version}</targetJdk>
+                    <rulesets>
+                        <ruleset>${pmd.config.location}</ruleset>
+                    </rulesets>
+                    <targetJdk>${pmd.target.jdk}</targetJdk>
+                    <failOnViolation>${pmd.fail.on.violation}</failOnViolation>
+                    <printFailingErrors>${pmd.print.failing.errors}</printFailingErrors>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+                <version>${checkstyle.plugin.version}</version>
+                <configuration>
+                    <configLocation>${checkstyle.config.location}</configLocation>
+                    <encoding>${checkstyle.encoding}</encoding>
+                    <consoleOutput>${checkstyle.consoleOutput}</consoleOutput>
+                    <failsOnError>${checkstyle.failsOnError}</failsOnError>
+                    <failOnViolation>${checkstyle.failOnViolation}</failOnViolation>
+                    <includeTestSourceDirectory>${checkstyle.includeTestSourceDirectory}</includeTestSourceDirectory>
+                </configuration>
+                <reportSets>
+                    <reportSet>
+                        <reports>
+                            <report>checkstyle</report>
+                        </reports>
+                    </reportSet>
+                </reportSets>
             </plugin>
             <plugin>
                 <groupId>org.jacoco</groupId>
@@ -170,25 +280,8 @@
                     </reportSet>
                 </reportSets>
             </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-checkstyle-plugin</artifactId>
-                <version>${checkstyle.plugin.version}</version>
-                <configuration>
-                    <configLocation>checkstyle.xml</configLocation>
-                    <failOnViolation>false</failOnViolation>
-                </configuration>
-                <reportSets>
-                    <reportSet>
-                        <reports>
-                            <report>checkstyle</report>
-                        </reports>
-                    </reportSet>
-                </reportSets>
-            </plugin>
         </plugins>
     </reporting>
-
     <modules>
         <module>multi-module-build-core</module>
         <module>multi-module-build-web</module>
