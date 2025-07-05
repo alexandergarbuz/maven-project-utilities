@@ -2,6 +2,11 @@
 
 This project is an example of how a multi module build can be set up.
 
+## Project Overview
+
+TBD
+
+
 ## Maven Site
 
 Everytime you push the code change to the `multi-module-build` project it will automatically trigger a new build and deploy a new version of the Maven site.
