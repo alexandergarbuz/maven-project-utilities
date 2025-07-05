@@ -40,7 +40,7 @@ jobs:
     - name: Build project
       run: |
         cd multi-module-build
-        mvn clean compile package
+        mvn clean compile
 
     - name: Run tests
       run: |
@@ -52,6 +52,39 @@ jobs:
         cd multi-module-build
         mvn site site:stage
 
+    - name: Prepare site for deployment
+      run: |
+        mkdir -p ./site-deploy/site
+        cp -r ./multi-module-build/target/staging/* ./site-deploy/site/
+        
+        # Create Home Page
+        cat > ./site-deploy/index.html << 'EOF'
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Maven Project Utilities</title>
+            <meta charset="UTF-8">
+            <style>
+                body { font-family: Arial, sans-serif; margin: 40px; }
+                .container { max-width: 800px; margin: 0 auto; }
+                h1 { color: #333; }
+                .link { display: block; margin: 20px 0; padding: 15px; background: #f5f5f5; text-decoration: none; color: #333; border-radius: 5px; }
+                .link:hover { background: #e9e9e9; }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <h1>Maven Project Utilities</h1>
+                <p>Welcome to Maven Project Utilities!</p>
+                <a href="./site/" class="link">
+                    <strong>📄 Project Documentation</strong><br>
+                    Project documentation, Queslity control reports & JavaDoc
+                </a>
+            </div>
+        </body>
+        </html>
+        EOF
+
     - name: Setup Pages
       uses: actions/configure-pages@v4
       with:
@@ -60,7 +93,7 @@ jobs:
     - name: Upload artifact
       uses: actions/upload-pages-artifact@v3
       with:
-        path: './multi-module-build/target/staging'  # путь к сгенерированному сайту
+        path: './site-deploy'  # теперь загружаем папку с подпапкой site
 
     - name: Deploy to GitHub Pages
       id: deployment
