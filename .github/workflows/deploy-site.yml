@@ -90,11 +90,19 @@ jobs:
       with:
         enablement: true  # turn on GitHub Pages
 
+    - name: Clean up previous artifacts
+      run: |
+        # This helps avoid conflicts with multiple artifacts
+        echo "Cleaning up workspace before upload"
+
     - name: Upload artifact
       uses: actions/upload-pages-artifact@v3
       with:
         path: './site-deploy'  # location of the site files to upload
+        name: github-pages-${{ github.run_number }}
 
     - name: Deploy to GitHub Pages
       id: deployment
       uses: actions/deploy-pages@v4
+      with:
+        artifact_name: github-pages-${{ github.run_number }} 
