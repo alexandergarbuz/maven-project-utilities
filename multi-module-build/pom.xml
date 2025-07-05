@@ -43,6 +43,7 @@
         <pmd.fail.on.violation>false</pmd.fail.on.violation>
         <pmd.print.failing.errors>true</pmd.print.failing.errors>
 
+        <spring.boot.maven.plugin.version>3.2.0</spring.boot.maven.plugin.version>
 
         <!-- Commont libraries -->
         <commons-lang3.version>3.12.0</commons-lang3.version>
@@ -195,6 +196,11 @@
                             </goals>
                         </execution>
                     </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-maven-plugin</artifactId>
+                    <version>${spring.boot.maven.plugin.version}</version>
                 </plugin>
             </plugins>
         </pluginManagement>
