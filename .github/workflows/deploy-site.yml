@@ -1,4 +1,4 @@
-name: Build & Deploy Maven Site to GitHub Pages
+name: Build And Deploy Maven Site to GitHub Pages
 
 on:
   push:
