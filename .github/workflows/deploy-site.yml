@@ -52,14 +52,23 @@ jobs:
         cd multi-module-build
         mvn site site:stage
 
-    - name: List generated files (for debugging)
+    - name: Prepare site for subdirectory deployment
       run: |
-        echo "Contents of multi-module-build directory:"
-        ls -la multi-module-build/
-        echo "Contents of target directory:"
-        ls -la multi-module-build/target/ 2>/dev/null || echo "No target directory"
-        echo "Contents of target/staging directory:"
-        ls -la multi-module-build/target/staging/ 2>/dev/null || echo "No target/staging directory"
+        # Create a new directory structure for Pages deployment
+        mkdir -p pages-deploy/site
+        
+        # Copy the Maven site to the site subdirectory
+        cp -r multi-module-build/target/staging/* pages-deploy/site/
+        
+        # Copy the custom homepage from .github/homepage directory
+        cp .github/homepage/index.html pages-deploy/
+
+    - name: List prepared files (for debugging)
+      run: |
+        echo "Contents of pages-deploy directory:"
+        ls -la pages-deploy/
+        echo "Contents of pages-deploy/site directory:"
+        ls -la pages-deploy/site/
 
     - name: Setup Pages
       uses: actions/configure-pages@v4
@@ -69,7 +78,7 @@ jobs:
     - name: Upload artifact
       uses: actions/upload-pages-artifact@v3
       with:
-        path: './multi-module-build/target/staging'
+        path: './pages-deploy'
         name: github-pages-${{ github.run_number }}
 
     - name: Deploy to GitHub Pages
