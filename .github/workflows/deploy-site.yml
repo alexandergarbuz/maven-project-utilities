@@ -52,24 +52,28 @@ jobs:
         cd multi-module-build
         mvn site site:stage
 
+    - name: List generated files (for debugging)
+      run: |
+        echo "Contents of multi-module-build directory:"
+        ls -la multi-module-build/
+        echo "Contents of target directory:"
+        ls -la multi-module-build/target/ 2>/dev/null || echo "No target directory"
+        echo "Contents of target/staging directory:"
+        ls -la multi-module-build/target/staging/ 2>/dev/null || echo "No target/staging directory"
+
     - name: Setup Pages
       uses: actions/configure-pages@v4
       with:
         enablement: true  # turn on GitHub Pages
 
-    - name: Clean up previous artifacts
-      run: |
-        # This helps avoid conflicts with multiple artifacts
-        echo "Cleaning up workspace before upload"
-
     - name: Upload artifact
       uses: actions/upload-pages-artifact@v3
       with:
-        path: './site-deploy'  # location of the site files to upload
+        path: './multi-module-build/target/staging'
         name: github-pages-${{ github.run_number }}
 
     - name: Deploy to GitHub Pages
       id: deployment
       uses: actions/deploy-pages@v4
       with:
-        artifact_name: github-pages-${{ github.run_number }} 
+        artifact_name: github-pages-${{ github.run_number }}
