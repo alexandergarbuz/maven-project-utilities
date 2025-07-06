@@ -4,7 +4,14 @@ This project is an example of how a multi module build can be set up.
 
 ## Project Overview
 
-TBD
+This is a basic example of a multi module build project using Maven.
+
+Core components are:
+
+* [`Core`](./multi-module-build-core/) - Core shared libraries
+* [`Web`](./multi-module-build-web/) - SpringBoot bases Web UI 
+* [`Services`](./multi-module-build-services/) - SpringBoot microservices (API)
+
 
 
 ## Maven Site
