@@ -1,0 +1,29 @@
+name: Integration Tests
+on:
+  workflow_run:
+    workflows: ["Build and Unit Tests"]
+    types: [completed]
+    
+jobs:
+  selenium-tests:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        
+    # Важно! Устанавливаем Chrome и ChromeDriver
+    - name: Setup Chrome
+      uses: browser-actions/setup-chrome@latest
+      
+    - name: Run Selenium tests
+      run: |
+        cd multi-module-build
+        mvn test -Dtest=**/selenium/** -Dheadless=true
+      env:
+        DISPLAY: :99
