@@ -1,4 +1,4 @@
-name: Run Maven Build and Unit Tests
+name: Build and Unit Tests
 on:
   push:
   pull_request:
