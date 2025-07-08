@@ -9,6 +9,7 @@ on:
     branches: [ main ]
     paths:
       - 'multi-module-build/**'
+  workflow_dispatch: 
 
 jobs:
   build-and-deploy:
