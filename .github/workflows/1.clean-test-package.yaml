@@ -1,7 +1,13 @@
-name: Build and Unit Tests
+name: Build and Run Unit Tests
 on:
   push:
+    branches: [ main ]
+    paths:
+      - 'multi-module-build/**'
   pull_request:
+    branches: [ main ]
+    paths:
+      - 'multi-module-build/**'
     
 jobs:
   build:
@@ -13,7 +19,7 @@ jobs:
       with:
         java-version: '17'
         distribution: 'temurin'
-    - name: Build and test
+    - name: Clean, build and test
       run: |
         cd multi-module-build
         mvn clean package

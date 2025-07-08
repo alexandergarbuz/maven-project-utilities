@@ -1,7 +1,15 @@
-name: Integration Tests
+name: Run Integration Tests
 on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'multi-module-build/**'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'multi-module-build/**'
   workflow_run:
-    workflows: ["Build and Unit Tests"]
+    workflows: ["Build and Run Unit Tests"]
     types: [completed]
     
 jobs:
@@ -17,13 +25,13 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
         
-    # Важно! Устанавливаем Chrome и ChromeDriver
     - name: Setup Chrome
       uses: browser-actions/setup-chrome@latest
       
     - name: Run Selenium tests
       run: |
         cd multi-module-build
-        mvn test -Dtest=**/selenium/** -Dheadless=true
+        #mvn test -Dtest=**/selenium/** -Dheadless=true
+        mvn test
       env:
         DISPLAY: :99
