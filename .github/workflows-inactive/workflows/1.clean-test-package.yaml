@@ -1,4 +1,4 @@
-name: Build and Run Unit Tests
+name: Build And Run JUnit Tests
 on:
   push:
     branches: [ main ]
