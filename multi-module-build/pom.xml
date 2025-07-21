@@ -18,11 +18,15 @@
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.root.dir>${basedir}</project.root.dir>
+        <!-- By default we turn them off but will use a profile to execute them in CI/CD -->
+        <skipIntegrationTests>true</skipIntegrationTests>
         
         <!-- Plugin versions -->
         <maven.compiler.plugin.version>3.11.0</maven.compiler.plugin.version>
         <maven.war.plugin.version>3.4.0</maven.war.plugin.version>
         <maven.surefire.plugin.version>3.1.2</maven.surefire.plugin.version>
+        <maven.failsafe.plugin.version>3.5.3</maven.failsafe.plugin.version>
+        <build.helper.maven.plugin.version>3.6.1</build.helper.maven.plugin.version>
         <jacoco.plugin.version>0.8.10</jacoco.plugin.version>
         <pmd.plugin.version>3.21.0</pmd.plugin.version>
         <checkstyle.plugin.version>3.3.0</checkstyle.plugin.version>
@@ -52,6 +56,11 @@
         <commons-logging.version>1.2</commons-logging.version>
         <!-- Other dependencies -->
         <junit.version>4.13.2</junit.version>
+        <assertj.version>3.27.3</assertj.version>
+        <selenium.version>4.34.0</selenium.version>
+        <webdrivermanager.version>6.1.1</webdrivermanager.version>
+        <org.apache.httpcomponents.version>5.3.4</org.apache.httpcomponents.version>
+        <org.apache.httpcomponents.httpclient5.version>5.5</org.apache.httpcomponents.httpclient5.version>
         <log4j.version>1.2.17</log4j.version>
         <doxia.version>2.0.0-M10</doxia.version>
     </properties>
@@ -100,6 +109,46 @@
                 <version>${junit.version}</version>
                 <scope>test</scope>
             </dependency>
+	        <dependency>
+	            <groupId>org.assertj</groupId>
+	            <artifactId>assertj-core</artifactId>
+	            <version>${assertj.version}</version>
+	            <scope>test</scope>
+	        </dependency>
+	        <!-- Selenium WebDriver -->
+	        <dependency>
+	            <groupId>org.seleniumhq.selenium</groupId>
+	            <artifactId>selenium-java</artifactId>
+	            <version>${selenium.version}</version>
+	            <scope>test</scope>
+	        </dependency>
+	        <!-- WebDriverManager for automatic webdriver configuration -->
+	        <dependency>
+	            <groupId>io.github.bonigarcia</groupId>
+	            <artifactId>webdrivermanager</artifactId>
+	            <version>${webdrivermanager.version}</version>
+	            <scope>test</scope>
+	        </dependency>
+	        <!-- To enable webdriver manager to download proper drivers -->
+	        <!-- since version 6.x webdriver manager requires apache clients -->
+			<dependency>
+			    <groupId>org.apache.httpcomponents.client5</groupId>
+			    <artifactId>httpclient5</artifactId>
+			    <version>${org.apache.httpcomponents.httpclient5.version}</version>
+			    <scope>test</scope>
+			</dependency>
+			<dependency>
+			    <groupId>org.apache.httpcomponents.core5</groupId>
+			    <artifactId>httpcore5</artifactId>
+			    <version>${org.apache.httpcomponents.version}</version>
+			    <scope>test</scope>
+			</dependency>
+			<dependency>
+			    <groupId>org.apache.httpcomponents.core5</groupId>
+			    <artifactId>httpcore5-h2</artifactId>
+			    <version>${org.apache.httpcomponents.version}</version>
+			    <scope>test</scope>
+			</dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -130,7 +179,43 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
                     <version>${maven.surefire.plugin.version}</version>
+	                <configuration>
+				        <excludes>
+				            <exclude>**/integration-test/**</exclude>
+				        </excludes>
+					</configuration>
                 </plugin>
+				<plugin>
+				    <groupId>org.apache.maven.plugins</groupId>
+				    <artifactId>maven-failsafe-plugin</artifactId>
+				    <version>${maven.failsafe.plugin.version}</version>
+				    <configuration>
+						<skip>${skipIntegrationTests}</skip>
+				        <includes>
+				            <include>**/integration-test/**</include>
+				            <include>**/*IT.java</include>
+				        </includes>
+				    </configuration>
+				</plugin>
+				<plugin>
+				    <groupId>org.codehaus.mojo</groupId>
+				    <artifactId>build-helper-maven-plugin</artifactId>
+				    <version>${build.helper.maven.plugin.version}</version>
+				    <executions>
+				        <execution>
+				            <id>add-integration-test-sources</id>
+				            <phase>generate-test-sources</phase>
+				            <goals>
+				                <goal>add-test-source</goal>
+				            </goals>
+				            <configuration>
+				                <sources>
+				                    <source>src/integration-test/java</source>
+				                </sources>
+				            </configuration>
+				        </execution>
+				    </executions>
+				</plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-pmd-plugin</artifactId>
@@ -316,4 +401,12 @@
         <module>multi-module-build-web</module>
         <module>multi-module-build-services</module>
     </modules>
+	<profiles>
+	    <profile>
+	        <id>run-integration-tests</id>
+	        <properties>
+	            <skipIntegrationTests>false</skipIntegrationTests>
+	        </properties>
+	    </profile>
+	</profiles>
 </project>
