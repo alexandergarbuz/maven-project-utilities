@@ -1,0 +1,167 @@
+name: Integration Tests with Selenium
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  integration-tests:
+    runs-on: ubuntu-latest
+    
+    services:
+      # Опционально: если нужна база данных для тестов
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: roottest
+          MYSQL_DATABASE: testdb
+          MYSQL_USER: test
+          MYSQL_PASSWORD: test
+        options: >-
+          --health-cmd="mysqladmin ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+        ports:
+          - 3306:3306
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+
+    - name: Cache Maven dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.m2
+        key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+        restore-keys: ${{ runner.os }}-m2
+
+    - name: Install Chrome and ChromeDriver
+      run: |
+        # Установка Chrome
+        wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
+        echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" | sudo tee /etc/apt/sources.list.d/google-chrome.list
+        sudo apt-get update
+        sudo apt-get install -y google-chrome-stable
+        
+        # Установка ChromeDriver
+        CHROME_VERSION=$(google-chrome --version | cut -d " " -f3 | cut -d "." -f1)
+        CHROMEDRIVER_VERSION=$(curl -s "https://chromedriver.storage.googleapis.com/LATEST_RELEASE_${CHROME_VERSION}")
+        wget -N "https://chromedriver.storage.googleapis.com/${CHROMEDRIVER_VERSION}/chromedriver_linux64.zip"
+        unzip chromedriver_linux64.zip
+        sudo mv chromedriver /usr/local/bin/
+        sudo chmod +x /usr/local/bin/chromedriver
+
+    - name: Start Xvfb (Virtual Display)
+      run: |
+        sudo apt-get install -y xvfb
+        export DISPLAY=:99
+        Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
+
+    - name: Build project
+      run: mvn clean compile -DskipTests
+
+    - name: Install Tomcat
+      run: |
+        # Скачиваем и устанавливаем Tomcat
+        wget https://archive.apache.org/dist/tomcat/tomcat-9/v9.0.75/bin/apache-tomcat-9.0.75.tar.gz
+        tar -xzf apache-tomcat-9.0.75.tar.gz
+        export CATALINA_HOME=$PWD/apache-tomcat-9.0.75
+        echo "CATALINA_HOME=$PWD/apache-tomcat-9.0.75" >> $GITHUB_ENV
+        
+        # Настраиваем права
+        chmod +x $CATALINA_HOME/bin/*.sh
+
+    - name: Start Spring Boot Application
+      run: |
+        # Запускаем Spring Boot приложение в фоне
+        nohup mvn spring-boot:run -Dspring-boot.run.profiles=test > spring-boot.log 2>&1 &
+        echo $! > spring-boot.pid
+        
+        # Ждем пока приложение поднимется
+        echo "Waiting for Spring Boot to start..."
+        timeout 300 bash -c 'until curl -f http://localhost:8080/actuator/health > /dev/null 2>&1; do sleep 5; done'
+        
+        if [ $? -eq 0 ]; then
+          echo "Spring Boot application started successfully"
+        else
+          echo "Spring Boot application failed to start"
+          cat spring-boot.log
+          exit 1
+        fi
+
+    - name: Run Integration Tests
+      env:
+        DISPLAY: :99
+      run: |
+        # Запускаем интеграционные тесты
+        mvn failsafe:integration-test failsafe:verify \
+          -P run-integration-tests \
+          -Dtest.browser=chrome \
+          -Dheadless=true \
+          -Dwebdriver.chrome.driver=/usr/local/bin/chromedriver \
+          -Dapp.url=http://localhost:8080
+
+    - name: Stop Spring Boot Application
+      if: always()
+      run: |
+        if [ -f spring-boot.pid ]; then
+          PID=$(cat spring-boot.pid)
+          if ps -p $PID > /dev/null; then
+            echo "Stopping Spring Boot application (PID: $PID)"
+            kill $PID
+            # Ждем корректного завершения
+            timeout 30 bash -c "while ps -p $PID > /dev/null; do sleep 1; done" || kill -9 $PID
+          fi
+          rm -f spring-boot.pid
+        fi
+
+    - name: Stop Tomcat
+      if: always()
+      run: |
+        if [ -n "$CATALINA_HOME" ] && [ -f "$CATALINA_HOME/bin/shutdown.sh" ]; then
+          echo "Stopping Tomcat..."
+          $CATALINA_HOME/bin/shutdown.sh || true
+        fi
+
+    - name: Collect logs
+      if: always()
+      run: |
+        echo "=== Spring Boot logs ==="
+        if [ -f spring-boot.log ]; then
+          cat spring-boot.log
+        fi
+        
+        echo "=== Surefire reports ==="
+        find . -name "*.log" -path "*/target/surefire-reports/*" -exec cat {} \;
+        
+        echo "=== Failsafe reports ==="
+        find . -name "*.log" -path "*/target/failsafe-reports/*" -exec cat {} \;
+
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: test-results
+        path: |
+          **/target/surefire-reports/**
+          **/target/failsafe-reports/**
+          **/target/site/jacoco/**
+          spring-boot.log
+
+    - name: Publish Test Results
+      if: always()
+      uses: dorny/test-reporter@v1
+      with:
+        name: Integration Tests Results
+        path: '**/target/failsafe-reports/TEST-*.xml'
+        reporter: java-junit
+        fail-on-error: true
