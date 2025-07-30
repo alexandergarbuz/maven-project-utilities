@@ -158,7 +158,7 @@ jobs:
       run: |
         echo "Running unit tests..."
         cd ./multi-module-build
-        mvn surefire:test
+        mvn clean install surefire:test
         echo "Unit tests completed"
         
     - name: Upload unit test results
