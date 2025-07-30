@@ -157,6 +157,7 @@ jobs:
     - name: Run Unit Tests
       run: |
         echo "Running unit tests..."
+        cd ./multi-module-build
         mvn surefire:test
         echo "Unit tests completed"
         
@@ -236,6 +237,7 @@ jobs:
         echo "Expected URL: ${{ env.APP_URL }}"
         
         # Start Spring Boot application in background
+        cd ./multi-module-build-web
         mvn spring-boot:start -Dspring-boot.run.profiles=${{ env.SPRING_PROFILES }}
         
         # Wait for application to become ready
