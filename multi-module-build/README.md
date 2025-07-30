@@ -13,6 +13,22 @@ Core components are:
 * [`Services`](./multi-module-build-services/) - SpringBoot microservices (API)
 
 
+## Running Integration Tests
+
+By default integration tests are not going to get executed. To execute integration tests you need to invoke `run-integration-tests` profile.
+
+You can also specify the browser ('chrome` or `firefox`). You can also enable `headless` mode when tests executed without opening real browser (for CI/CD pipelines).
+
+```
+cd ./multi-module-build-web
+
+mvn spring-boot:start
+
+mvn clean install failsafe:integration-test -P run-integration-tests "-Dtest.browser=chrome" "-Dheadless=false"
+
+mvn spring-boot:stop
+```
+
 
 ## Maven Site
 

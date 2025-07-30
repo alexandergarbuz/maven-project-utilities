@@ -21,6 +21,8 @@
 
     <properties>
         <project.root.dir>${project.basedir}/..</project.root.dir>
+        <javax.servlet.api.version>4.0.1</javax.servlet.api.version>
+        <javax.jsp.api.version>2.2</javax.jsp.api.version>
         <spring.boot.version>3.2.0</spring.boot.version>
     </properties>
 
@@ -37,8 +39,32 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+        </dependency>
+        <!-- Selenium WebDriver -->
+        <dependency>
+            <groupId>org.seleniumhq.selenium</groupId>
+            <artifactId>selenium-java</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.github.bonigarcia</groupId>
+            <artifactId>webdrivermanager</artifactId>
+        </dependency>
+		<dependency>
+		    <groupId>org.apache.httpcomponents.client5</groupId>
+		    <artifactId>httpclient5</artifactId>
+		</dependency>
+		<dependency>
+		    <groupId>org.apache.httpcomponents.core5</groupId>
+		    <artifactId>httpcore5</artifactId>
+		</dependency>
+		<dependency>
+		    <groupId>org.apache.httpcomponents.core5</groupId>
+		    <artifactId>httpcore5-h2</artifactId>
+		</dependency>
         <!-- Spring Boot dependencies -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -48,23 +74,26 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-thymeleaf</artifactId>
         </dependency>
+		<dependency>
+		    <groupId>org.springframework.boot</groupId>
+		    <artifactId>spring-boot-starter-actuator</artifactId>
+		</dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-tomcat</artifactId>
             <scope>provided</scope>
         </dependency>
-        <!-- Servlet API for web applications -->
+        <!-- Servlet and JSP API for web applications -->
         <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>javax.servlet-api</artifactId>
-            <version>4.0.1</version>
+            <version>${javax.servlet.api.version}</version>
             <scope>provided</scope>
         </dependency>
-        <!-- JSP API if needed -->
         <dependency>
             <groupId>javax.servlet.jsp</groupId>
             <artifactId>jsp-api</artifactId>
-            <version>2.2</version>
+            <version>${javax.jsp.api.version}</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>
@@ -110,6 +139,14 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+            </plugin>
+				<plugin>
+				    <groupId>org.codehaus.mojo</groupId>
+				    <artifactId>build-helper-maven-plugin</artifactId>
             </plugin>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
