@@ -1,32 +1,26 @@
 name: Integration Tests with Selenium
-
 on:
   push:
     branches: [ main, add-selenium-tests ]
   pull_request:
     branches: [ main, add-selenium-tests ]
-
 jobs:
   integration-tests:
     runs-on: ubuntu-latest
-
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-
     - name: Set up JDK 17
       uses: actions/setup-java@v4
       with:
         java-version: '17'
         distribution: 'temurin'
-
     - name: Cache Maven dependencies
       uses: actions/cache@v3
       with:
         path: ~/.m2
         key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
         restore-keys: ${{ runner.os }}-m2
-
     - name: Install Chrome and ChromeDriver
       run: |
         # Установка Chrome
@@ -35,26 +29,40 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y google-chrome-stable
         
-        # Установка ChromeDriver
-        CHROME_VERSION=$(google-chrome --version | cut -d " " -f3 | cut -d "." -f1)
-        CHROMEDRIVER_VERSION=$(curl -s "https://chromedriver.storage.googleapis.com/LATEST_RELEASE_${CHROME_VERSION}")
-        wget -N "https://chromedriver.storage.googleapis.com/${CHROMEDRIVER_VERSION}/chromedriver_linux64.zip"
-        unzip chromedriver_linux64.zip
-        sudo mv chromedriver /usr/local/bin/
+        # Получаем версию Chrome
+        CHROME_VERSION=$(google-chrome --version | cut -d " " -f3 | cut -d "." -f1-3)
+        echo "Chrome version: $CHROME_VERSION"
+        
+        # Новый способ получения ChromeDriver через Chrome for Testing API
+        CHROMEDRIVER_URL=$(curl -s "https://googlechromelabs.github.io/chrome-for-testing/known-good-versions-with-downloads.json" | \
+          jq -r ".versions[] | select(.version | startswith(\"$CHROME_VERSION\")) | .downloads.chromedriver[] | select(.platform==\"linux64\") | .url" | head -1)
+        
+        if [ -z "$CHROMEDRIVER_URL" ]; then
+          echo "Не удалось найти ChromeDriver для версии $CHROME_VERSION"
+          # Fallback: используем последнюю стабильную версию
+          CHROMEDRIVER_URL=$(curl -s "https://googlechromelabs.github.io/chrome-for-testing/last-known-good-versions.json" | \
+            jq -r '.channels.Stable.downloads.chromedriver[] | select(.platform=="linux64") | .url')
+        fi
+        
+        echo "Downloading ChromeDriver from: $CHROMEDRIVER_URL"
+        wget -N "$CHROMEDRIVER_URL" -O chromedriver-linux64.zip
+        unzip chromedriver-linux64.zip
+        sudo mv chromedriver-linux64/chromedriver /usr/local/bin/
         sudo chmod +x /usr/local/bin/chromedriver
-
+        
+        # Проверяем версии
+        echo "Chrome version: $(google-chrome --version)"
+        echo "ChromeDriver version: $(chromedriver --version)"
     - name: Start Xvfb (Virtual Display)
       run: |
         sudo apt-get install -y xvfb
         export DISPLAY=:99
         Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
-
     - name: Build project
       run: mvn clean compile -DskipTests
-
     - name: Start Spring Boot Application
       run: |
-        # Запускаем Spring Boot приложение в фоне
+        # Запускаem Spring Boot приложение в фоне
         mvn spring-boot:start -Dspring-boot.run.profiles=test
         
         # Ждем пока приложение поднимется
@@ -69,7 +77,6 @@ jobs:
           exit 1
         fi
         echo "Spring Boot application started successfully with status UP"
-
     - name: Run Integration Tests
       env:
         DISPLAY: :99
@@ -81,13 +88,11 @@ jobs:
           -Dheadless=true \
           -Dwebdriver.chrome.driver=/usr/local/bin/chromedriver \
           -Dapp.url=http://localhost:8080
-
     - name: Stop Spring Boot Application
       if: always()
       run: |
         echo "Stopping Spring Boot application..."
         mvn spring-boot:stop || true
-
     - name: Collect logs
       if: always()
       run: |
@@ -96,7 +101,6 @@ jobs:
         
         echo "=== Failsafe reports ==="
         find . -name "*.log" -path "*/target/failsafe-reports/*" -exec cat {} \;
-
     - name: Upload test results
       if: always()
       uses: actions/upload-artifact@v4
@@ -106,7 +110,6 @@ jobs:
           **/target/surefire-reports/**
           **/target/failsafe-reports/**
           **/target/site/jacoco/**
-
     - name: Publish Test Results
       if: always()
       uses: dorny/test-reporter@v1
